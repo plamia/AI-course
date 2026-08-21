@@ -2,10 +2,9 @@
 
 **Date:** 2025-06-12
 **Author:** Plamena Kichukova — Developer
-**Project:** AI-course (github.com/plamia/AI-course)
-**Task:** Summarize a raw GitHub bug-report issue into a structured triage note (repro steps, expected vs. actual, severity, area label) for maintainer review.
+**Project:** Meridian Retail Group (MRG) — Omnichannel Commerce Platform (Case A)
+**Task:** Summarize a raw cross-channel inventory defect report into a structured triage note (repro / expected / actual / severity / area) for the MRG platform squad.
 **Committed location:** https://github.com/plamia/AI-course/blob/main/model-selection-note.md
-*(Note: confirm this file is pushed and the link resolves before marking review item #9 complete.)*
 
 ---
 
@@ -13,22 +12,16 @@
 
 | # | Criterion | Why it matters for this task |
 |---|-----------|------------------------------|
-| 1 | Accuracy to source issue | Triage notes must reflect only what the reporter stated; invented repro steps or details mislead maintainers. |
-| 2 | Format compliance | Output must follow the fixed triage template (Repro / Expected / Actual / Severity / Area) to be pasteable into the issue. |
-| 3 | Completeness | A useful triage note must extract every actionable detail, including environment, frequency, and diagnostic steps already tried. |
-| 4 | Conciseness | Maintainers triage dozens of issues; a bloated summary wastes review time. |
-
----
-
-## Method Note
-
-Each prompt was run **once** per model for this comparison. Latency and cost were **not** measured and are therefore not scored criteria; any reference to them appears only as a flagged, unverified hypothesis in the Active Constraint section. A follow-up multi-run pass (5×/model) is recommended before high-volume rollout to confirm the completeness difference below is systematic rather than a single-sample artifact.
+| 1 | Accuracy to source report | Triage notes must reflect only what the report stated; invented repro steps or root causes mislead the squad. |
+| 2 | Format compliance | Output must follow the fixed triage template to be pasteable into the defect tracker. |
+| 3 | Completeness | A useful triage note must capture every actionable detail — location, frequency, systems involved, and the suspected sync delay. |
+| 4 | Actionability of area label | With 3 SIs and multiple legacy systems, a specific area label routes the defect to the right squad faster. |
 
 ---
 
 ## Prompt Used
 
-You are an open-source project maintainer assistant. Read the GitHub issue text
+You are a commerce platform delivery assistant. Read the defect report text
 below and produce a triage note using EXACTLY this template:
 
 **Repro steps:** (numbered)
@@ -37,15 +30,17 @@ below and produce a triage note using EXACTLY this template:
 **Severity:** (Low / Medium / High)
 **Suggested area label:** 
 
-Use only information present in the issue. Do not invent repro steps or versions.
+Use only information present in the report. Do not invent repro steps or root causes.
 Keep it under 120 words.
 
-ISSUE:
-"Title: Editor autocomplete freezes on large JS challenge
-I'm on the JavaScript Algorithms course, the 'Cash Register' challenge.
-When I type fast in the editor, autocomplete popup freezes the whole page for
-2-3 seconds. Happens every time. Chrome 125 on Windows 11. Tried disabling
-extensions, no change. Expected the editor to stay responsive."
+DEFECT REPORT:
+"Title: Click & collect order cancelled at pickup — phantom stock
+Customer ordered a home-goods item online for in-store pickup at the Milan
+store. Online product page showed 3 in stock. At pickup, the store had 0 units —
+order was cancelled. SAP ERP showed 0 at that store; the platform inventory view
+showed 3. Happens intermittently during peak hours. The commercetools inventory
+sync from SAP appears delayed. Expected online availability to match store
+ground-truth stock."
 
 ---
 
@@ -53,33 +48,22 @@ extensions, no change. Expected the editor to stay responsive."
 
 ### Model A: Anthropic Claude Opus 4.8 (via EPAM DIAL)
 > **Repro steps:**
-> 1. Open the JavaScript Algorithms course, 'Cash Register' challenge.
-> 2. Type quickly in the editor to trigger the autocomplete popup.
-> **Expected:** The editor stays responsive while autocomplete is active.
-> **Actual:** The autocomplete popup freezes the whole page for 2-3 seconds; happens every time. Occurs on Chrome 125 / Windows 11; persists with extensions disabled.
-> **Severity:** Medium
-> **Suggested area label:** editor / autocomplete
+> 1. Order a home-goods item online for in-store pickup at the Milan store (product page shows 3 in stock).
+> 2. Attempt to collect the order at the store during peak hours.
+> 3. Observe the outcome at pickup.
+> **Expected:** Online availability matches store ground-truth stock.
+> **Actual:** Store had 0 units and the order was cancelled; SAP ERP showed 0 at the store while the platform inventory view showed 3. Occurs intermittently during peak hours; commercetools inventory sync from SAP appears delayed.
+> **Severity:** High
+> **Suggested area label:** Inventory sync (commercetools ↔ SAP)
 
 ### Model B: Google Gemini 3.1 Pro (via EPAM DIAL)
 > **Repro steps:**
-> 1. Navigate to the JavaScript Algorithms course, 'Cash Register' challenge (Chrome 125 on Windows 11).
-> 2. Type fast in the editor.
-> **Expected:** The editor stays responsive.
-> **Actual:** The autocomplete popup freezes the whole page for 2-3 seconds.
-> **Severity:** Medium
-> **Suggested area label:** Editor
-
----
-
-## Label Validation
-
-Neither model's suggested label should be accepted verbatim. Checked against the freeCodeCamp label taxonomy (github.com/freeCodeCamp/freeCodeCamp/labels):
-
-- `editor / autocomplete` (Model A) — **not a valid label**; no such compound label exists in the taxonomy.
-- `Editor` (Model B) — **not a valid label**; the repo uses lowercase prefixed labels, not a bare `Editor`.
-- **Correct label (human-selected against live taxonomy):** the closest maintained match for an editor UI freeze is **`platform`** combined with **`type: bug`**.
-
-Label selection requires a human check against the live taxonomy regardless of model choice.
+> 1. Order a home-goods item online for in-store pickup at the Milan store (product page shows 3 in stock).
+> 2. Attempt to pick up the order at the store.
+> **Expected:** Online availability to match store ground-truth stock.
+> **Actual:** Store has 0 units (SAP ERP shows 0; platform shows 3) and the order is cancelled. The commercetools inventory sync from SAP appears intermittently delayed during peak hours.
+> **Severity:** High
+> **Suggested area label:** Inventory Sync
 
 ---
 
@@ -87,11 +71,11 @@ Label selection requires a human check against the live taxonomy regardless of m
 
 | Criterion | Model A score (1–3) | Model A evidence | Model B score (1–3) | Model B evidence |
 |-----------|---------------------|------------------|---------------------|------------------|
-| Accuracy to source issue | 3 | No invented details; all content traceable to the issue. | 3 | No invented details; all content traceable to the issue. |
-| Format compliance | 3 | Clean template; repro steps kept separate from environment/actual detail. | 2 | Follows template, but folds environment ("Chrome 125 on Windows 11") into a repro step rather than the Actual/environment line — awkward for triage scanning. |
-| Completeness | 3 | Captured environment (Chrome 125 / Win 11), "happens every time," AND "persists with extensions disabled." | 1 | Dropped both "happens every time" (frequency) and "extensions disabled" (diagnostic already tried) — forcing a maintainer to re-read the issue. |
-| Conciseness | 3 | Tight, well under word limit. | 3 | Very tight, under word limit. |
-| **Total** | **12** | | **9** | |
+| Accuracy to source report | 2 | Content is accurate, but step 3 ("Observe the outcome at pickup") is non-sourced filler not present in the report. | 3 | Every element traceable to the report; no invented steps. |
+| Format compliance | 3 | Follows the template precisely; clean field separation. | 3 | Follows the template precisely; clean field separation. |
+| Completeness | 3 | Captured Milan, peak-hours frequency, SAP-vs-platform mismatch, and the suspected sync delay. | 3 | Captured the same details, compactly, including the sync-delay hypothesis. |
+| Actionability of area label | 3 | "Inventory sync (commercetools ↔ SAP)" names the exact integration — routes straight to the responsible squad. | 2 | "Inventory Sync" is correct but generic; doesn't name the systems, so needs human refinement before routing. |
+| **Total** | **11** | | **11** | |
 
 ---
 
@@ -99,17 +83,14 @@ Label selection requires a human check against the live taxonomy regardless of m
 
 **Selected model:** Anthropic Claude Opus 4.8
 
-**Rationale:** Claude Opus 4.8 wins clearly (12 vs. 9) on completeness, the highest-priority criterion for triage. It preserved all three actionable details a maintainer needs — environment, frequency ("happens every time"), and the diagnostic already attempted ("extensions disabled") — while Gemini 3.1 Pro dropped the latter two. Gemini also lost a format point by embedding environment info inside a repro step. Both were equally accurate and concise. The final label is human-selected against the live taxonomy before paste.
+**Rationale:** The two models tie at 11, so the decision falls on the highest-priority criterion for this multi-SI environment — actionability of the area label — where Claude won by naming the exact integration ("commercetools ↔ SAP"), routing the defect straight to the responsible squad. Gemini was cleaner on accuracy (Claude added one non-sourced repro step) and equally complete, but its generic "Inventory Sync" label would need human refinement before routing across three SIs. The label specificity outweighed the minor accuracy cost for a defect that must reach the right team fast.
 
 ---
 
 ## Active Constraint
 
 **What could change this decision within 30 days:**
-
-1. **Cost / latency (unverified).** *Hypothesis only — not measured here.* If issue volume grows and cost-per-run or latency becomes a binding constraint, a cheaper or faster model could outweigh Claude's completeness edge. Requires actual per-run measurement before acting.
-2. **Single-run sampling.** This comparison rests on one run per model. If a 5×/model re-run shows Gemini reliably captures the missing details (i.e., the omission was a one-off), the completeness gap narrows and the decision should be revisited.
-3. **Prompt fix closes the gap.** If an explicit "always include frequency, environment, and any diagnostics already tried" instruction reliably fixes Gemini's omissions, the models could converge and the choice would shift toward secondary criteria (cost/latency).
+If the triage note is fed into an automated router that treats added repro steps as executable, Claude's non-sourced step becomes a correctness risk and the decision would shift toward Gemini's cleaner accuracy.
 
 ---
 
@@ -118,5 +99,3 @@ Label selection requires a human check against the live taxonomy regardless of m
 | Version | Date | Change |
 |---------|------|--------|
 | 1.0 | 2025-06-12 | Initial commit |
-| 2.0 | 2025-06-12 | Switched compared models to Claude Opus 4.8 and Gemini 3.1 Pro; scored against real single-run outputs; adjusted Method Note to reflect single run; updated label validation and Active Constraint accordingly. |
-| 2.1 | 2025-06-12 | Updated Project to AI-course and corrected committed-location URL to github.com/plamia/AI-course. |

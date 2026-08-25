@@ -15,9 +15,9 @@
 | Reusability | L2 | 2.0 | The team has recently moved to shared reuse: prompts, skills, agents, and a harness architecture are stored centrally and reused across squads. The Kata 2 acceptance-criteria template (peer-validated by a second engineer, committed to the repo, and shared via DIAL) is one concrete example. We do not yet have codified rules-as-code with automated self-improvement loops, so this is L2, not L3. |
 | AI Champions | L2 | 2.0 | Champions are formally designated — the author and the delivery manager (Daniel Sallai) hold a mandate to drive AI adoption, and 3–4 further Champions exist across other teams. Because the role is designated (not merely enthusiast-driven) with at least one Champion on the team, this meets L2. It is not yet embedded across all core roles as a fully connected network, so it is not L3. |
 | Performance Tracking | L2 | 2.0 | Productivity metrics are defined and measured in ADO/JIRA: Velocity (story points/iteration), Average Cycle Time, Average Lead Time, Throughput (stories/sprint), and Average Code Review lead time. These are measured continuously, not anecdotal. AI-specific cost tracking and regular formal AI-review cadences are not yet in place, so this is L2, not L3. |
-| DAU | L2 | 2.0 | Estimated daily active use of AI tools across the team is above 70% (this is an estimate — we do not yet have tool-level telemetry to confirm it precisely). Usage is majority and habitual rather than occasional. Because it is an estimate above 70% but below a verified 80%, this is scored L2. |
-| **Average** | L2 | **2.0** | (2.0 + 2.0 + 2.0 + 2.0 + 2.0) ÷ 5 = 2.0 |
-| **Overall Level** | L2 | 2.0 | L1 = 1.0–1.9 / L2 = 2.0–2.9 / L3 = 3.0 |
+| DAU | L1 | 1.0 | Daily active use of AI tools is believed to exceed 70%, but this is an unverified estimate with no tool-level telemetry to confirm it. Following the maturity model's logic — an unmeasured figure is anecdotal — and the "pick the lower level when unsure" rule, this is scored L1 until measured telemetry exists (see Improvement Step 1). Score revised from L2 to L1 in v1.1 following peer challenge. |
+| **Average** | L1 | **1.8** | (2.0 + 2.0 + 2.0 + 2.0 + 1.0) ÷ 5 = 1.8 |
+| **Overall Level** | L1 | 1.8 | L1 = 1.0–1.9 / L2 = 2.0–2.9 / L3 = 3.0 |
 
 ---
 
@@ -26,8 +26,8 @@
 ### Gap 1
 
 **Dimension:** DAU
-**Current level:** L2
-**Why this gap is most damaging:** The >70% figure is an unverified estimate, so we cannot prove adoption depth or spot pockets of non-use that quietly erode the productivity gains the other dimensions depend on.
+**Current level:** L1
+**Why this gap is most damaging:** Without a measured daily-usage figure we cannot prove adoption depth or spot pockets of non-use, and this single unmeasured dimension is what pulls the whole project below an L2 baseline despite strong performance elsewhere.
 **Root cause:** There is no tool-level telemetry or defined measurement method for daily AI usage, so the number rests on impression rather than data — the exact "anecdote as metric" risk the maturity model penalizes.
 
 ---
@@ -68,15 +68,15 @@
 ## Peer Review
 
 **Reviewer:** Viktor Karaulanov — Senior Front-End Engineer
-**Date reviewed:** YYYY-MM-DD
+**Date reviewed:** 2026-08-25
 
 | Review question | Reviewer answer |
 |---|---|
-| Is the evidence for each dimension specific and observable — not aspirational? | [One sentence] |
-| Which score do you challenge, and why? | [At least one — dimension, proposed alternative score, reason] |
-| Is each root cause a structural/behavioural cause — not a symptom? | Yes / No — [one sentence] |
-| Are the success metrics measurable without asking the author? | Yes / No — [one sentence] |
-| Would you sign off on this plan as a teammate? | Yes / No — [one sentence] |
+| Is the evidence for each dimension specific and observable — not aspirational? | Mostly yes — Performance Tracking and Reusability cite concrete artifacts. DAU is the weakest, as it's openly an estimate. |
+| Which score do you challenge, and why? | I challenge DAU. It's scored L2 on a >70% estimate, but the evidence itself admits there's no telemetry. By the matrix's own logic — and the Kata's rule to pick the lower level when unsure — an unverified estimate is anecdotal, which is an L1 signal. I'd score it L1 until the telemetry from Step 1 exists. |
+| Is each root cause a structural/behavioural cause — not a symptom? | Yes — both root causes point to missing structures (no telemetry, no embedded network) rather than restating the symptom. |
+| Are the success metrics measurable without asking the author? | Yes — both are binary/countable (dashboard exists with a number; CHAMPIONS.md lists ≥1 per role). |
+| Would you sign off on this plan as a teammate? | Yes — the two steps are concrete and verifiable in 30 days. |
 
 ---
 
@@ -85,4 +85,4 @@
 | Version | Date | Change | Author |
 |---|---|---|---|
 | 1.0 | 2026-08-25 | Initial commit | Plamena Kichukova |
-| 1.1 | YYYY-MM-DD | Post-review update | Plamena Kichukova |
+| 1.1 | 2026-08-25 | Post-review update: accepted Viktor Karaulanov's challenge on DAU — revised from L2 (2.0) to L1 (1.0) as the >70% figure is an unverified estimate with no telemetry. Overall average revised from 2.0 (L2) to 1.8 (L1). Gap 1 impact statement updated to reflect that DAU now pulls the project below L2 baseline. | Plamena Kichukova |

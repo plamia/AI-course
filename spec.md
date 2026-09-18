@@ -57,3 +57,6 @@ to `summary.csv`.
 
 ## Signed off
 PAK — 18.09.2026
+
+## Implementation notes
+- **Timestamp resilience:** Decided to treat malformed timestamps as valid log occurrences for counting and grouping purposes, but omitted them from `first_seen` and `last_seen` calculations by storing `None` values rather than raising a parse error.

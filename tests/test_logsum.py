@@ -130,3 +130,22 @@ def test_multiple_distinct_groups(run_cli):
     assert len(reader) == 2
     assert reader[0]["service"] == "auth" and reader[0]["level"] == "ERROR"
     assert reader[1]["service"] == "billing" and reader[1]["level"] == "INFO"
+
+def test_min_count_filtering(run_cli):
+    """Test that --min-count N filters out groups below threshold."""
+    csv_data = (
+        "timestamp,level,service,message\n"
+        "2024-01-15T13:45:30Z,INFO,auth,login1\n"
+        "2024-01-15T13:46:00Z,INFO,auth,login2\n"
+        "2024-01-15T13:40:00Z,ERROR,auth,fail1\n"
+    )
+    result, out_file = run_cli(csv_data, args=["--min-count", "2"])
+    assert result.returncode == 0
+    
+    with open(out_file, encoding="utf-8") as f:
+        reader = list(csv.DictReader(f))
+    
+    assert len(reader) == 1
+    assert reader[0]["service"] == "auth"
+    assert reader[0]["level"] == "INFO"
+    assert reader[0]["count"] == "2"

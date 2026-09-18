@@ -58,6 +58,7 @@ def main():
     parser = argparse.ArgumentParser(description="Summarise event logs.")
     parser.add_argument("-i", "--input", required=True, help="Path to input CSV")
     parser.add_argument("-o", "--output", default="summary.csv", help="Path to output CSV")
+    parser.add_argument("--min-count", type=int, default=1, help="Minimum count threshold for output groups")
     args = parser.parse_args()
 
     rows = read_events(args.input)
@@ -78,7 +79,10 @@ def main():
             if groups[group_key]["last_seen"] is None or dt > groups[group_key]["last_seen"]:
                 groups[group_key]["last_seen"] = dt
 
-    write_summary(args.output, groups)
+    # Filter groups based on --min-count threshold
+    filtered_groups = {k: v for k, v in groups.items() if v["count"] >= args.min_count}
+
+    write_summary(args.output, filtered_groups)
     sys.exit(0)
 
 if __name__ == "__main__":

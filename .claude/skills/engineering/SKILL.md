@@ -1,6 +1,7 @@
 ---
 name: engineering-logsum
-description: Given a spec and the log-summariser sandbox repo, produce a layered
+description: |
+  Given a spec and the log-summariser sandbox repo, produce a layered
   context bundle, a session log, independent tests from the spec (isolation tier
   recorded), a seven-lens review with an adversarial pass, and a PR provenance
   block. Inputs: spec.md or changes/<id>/delta.md, the sandbox repo. Outputs:

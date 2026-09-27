@@ -1,0 +1,28 @@
+nfr_budget:
+  service: quote-discount-service
+  version: "1.0.0"
+  metrics:
+    - name: latency_p95
+      target: 250
+      unit: milliseconds
+      measurement_method: Fastify route metric hook / Prometheus HTTP histogram
+    - name: latency_p99
+      target: 500
+      unit: milliseconds
+      measurement_method: Fastify route metric hook / Prometheus HTTP histogram
+    - name: max_request_payload
+      target: 64
+      unit: kilobytes
+      measurement_method: Fastify bodyLimit configuration check
+    - name: max_response_payload
+      target: 128
+      unit: kilobytes
+      measurement_method: Response payload byte-length middleware
+    - name: max_ai_token_cost
+      target: 0.05
+      unit: eur_per_request
+      measurement_method: Azure OpenAI DIAL gateway log audit (Module 800)
+    - name: max_db_connections
+      target: 10
+      unit: pool_instances
+      measurement_method: Prisma Client connection pool configuration

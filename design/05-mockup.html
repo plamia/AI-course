@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 - Availability Assistant Lo-Fi Prototype (ROUGH - UNBRANDED)</title>
+<style>
+  /* Deliberately rough / unbranded - critique the FLOW, not the pixels */
+  * { box-sizing: border-box; font-family: monospace; }
+  body { background: #ddd; margin: 0; padding: 20px; }
+  .note { max-width: 900px; margin: 0 auto 16px; background: #fff8c4; border: 2px dashed #999; padding: 10px; font-size: 13px; }
+  .stage { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .screen { width: 300px; min-height: 480px; background: #fff; border: 3px solid #333; padding: 14px; }
+  .screen h2 { font-size: 14px; border-bottom: 2px solid #333; padding-bottom: 6px; margin-top: 0; }
+  .hidden { display: none; }
+  .prod { height: 90px; background: #eee; border: 2px dashed #999; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 12px; }
+  .band { padding: 10px; border: 2px solid #333; margin-bottom: 8px; font-weight: bold; }
+  .green { background: #c8f7c5; }
+  .amber { background: #ffe6a8; }
+  .grey  { background: #d9d9d9; }
+  .ts { font-size: 11px; color: #444; margin-bottom: 10px; }
+  .why { font-size: 11px; text-decoration: underline; cursor: pointer; color: #0645ad; }
+  .whybox { display:none; font-size:11px; background:#f0f0f0; border:1px dotted #666; padding:6px; margin:6px 0; }
+  button { width: 100%; padding: 10px; margin-top: 8px; border: 2px solid #333; background: #fff; cursor: pointer; font-family: monospace; font-size: 13px; }
+  button:hover { background: #333; color: #fff; }
+  .toggle { background:#333; color:#fff; padding:6px; text-align:center; font-size:12px; margin-bottom:10px; }
+  .toggle span { cursor:pointer; text-decoration:underline; }
+  .fallback { border:2px solid #cc0000; background:#ffecec; padding:10px; margin-top:8px; font-size:12px; }
+  .cancel-note { font-size:11px; color:#006600; margin-top:6px; }
+  .step { font-size:11px; color:#666; }
+</style>
+</head>
+<body>
+
+<div class="note">
+  <b>05-mockup.html — ROUGH, UNBRANDED lo-fi prototype (K 3.W.6).</b><br>
+  Meridian Availability Assistant. Click the confidence toggle to switch between the
+  <b>HAPPY PATH (green)</b>, <b>LOW-CONFIDENCE (amber)</b>, and <b>CAN'T-CONFIRM (grey / fallback)</b> states.
+  Then click through the 3 screens. Ugly on purpose — critique the flow.
+</div>
+
+<!-- Global state toggle -->
+<div style="max-width:900px;margin:0 auto 16px;text-align:center;">
+  <div class="toggle">
+    Confidence state:
+    <span onclick="setState('green')">[ Green / Likely ]</span> |
+    <span onclick="setState('amber')">[ Amber / Might be low ]</span> |
+    <span onclick="setState('grey')">[ Grey / Can't confirm ]</span>
+  </div>
+</div>
+
+<div class="stage">
+
+  <!-- SCREEN 1 - PRODUCT PAGE -->
+  <div class="screen">
+    <h2>Screen 1 · Product page</h2>
+    <div class="prod">[ Product image ]<br>Wireless Headphones £89</div>
+    <div class="step">Nearest store: Camden (2.1 mi)</div>
+
+    <!-- Confidence band swaps by state -->
+    <div id="band-green" class="band green">🟢 Likely on shelf</div>
+    <div id="band-amber" class="band amber hidden">🟠 Might be low</div>
+    <div id="band-grey"  class="band grey hidden">⚪ Can't confirm</div>
+
+    <div id="ts-fresh" class="ts">Stock checked 8 min ago</div>
+    <div id="ts-stale" class="ts hidden">Stock last synced 27 min ago</div>
+
+    <span class="why" onclick="toggleWhy()">Why? (how sure are we?)</span>
+    <div id="whybox" class="whybox">
+      This is an <b>estimate</b>, not a guarantee. Store stock syncs every 15–30 min,
+      so it can be slightly out of date. (AI-AC4 disclosure)
+    </div>
+
+    <!-- Fallback block only for grey -->
+    <div id="fallback1" class="fallback hidden">
+      We can't confirm this item is on the shelf.<br>
+      • <b>Camden</b> can't be confirmed<br>
+      • ✅ <b>Kentish Town (3.4 mi)</b> — Likely on shelf<br>
+      • 🚚 Get it delivered instead
+    </div>
+
+    <button onclick="go(2)" id="reserveBtn">Reserve for pickup →</button>
+  </div>
+
+  <!-- SCREEN 2 - RESERVE / CONFIRM -->
+  <div class="screen hidden" id="screen2">
+    <h2>Screen 2 · Reserve &amp; confirm</h2>
+    <div class="prod">[ Product ]<br>Wireless Headphones £89</div>
+    <div class="step">Pickup at: Camden (2.1 mi)</div>
+
+    <div id="conf-green" class="band green">🟢 Likely on shelf · checked 8 min ago</div>
+    <div id="conf-amber" class="band amber hidden">🟠 Might be low · checked 22 min ago</div>
+    <div id="conf-grey"  class="band grey hidden">⚪ Can't confirm this store</div>
+
+    <!-- Free cancellation attaches on amber/grey (AI-AC2 / AI-AC6) -->
+    <div id="cancelNote" class="cancel-note hidden">
+      ✔ Reserved with <b>free cancellation</b> — no cost if it's not there.
+    </div>
+
+    <div id="fallback2" class="fallback hidden">
+      Not confident about Camden. Prefer a surer option?<br>
+      • Reserve at <b>Kentish Town</b> (Likely) instead<br>
+      • Or switch to <b>home delivery</b>
+    </div>
+
+    <button onclick="go(3)">Confirm reservation →</button>
+    <button onclick="go(1)" style="background:#eee">← Back</button>
+  </div>
+
+  <!-- SCREEN 3 - PICKUP CONFIRMATION -->
+  <div class="screen hidden" id="screen3">
+    <h2>Screen 3 · Pickup confirmation</h2>
+    <div class="band green" style="text-align:center;">✅ Reserved</div>
+    <p style="font-size:13px;">Wireless Headphones £89<br>Pickup: Camden (2.1 mi)</p>
+
+    <div id="honest-green" class="ts">We're confident this is on the shelf (checked 8 min ago). Head over any time today.</div>
+    <div id="honest-amber" class="ts hidden">Reserved with <b>free cancellation</b>. Stock might be low — we'll message you if we can't find it, no charge.</div>
+    <div id="honest-grey"  class="ts hidden">We couldn't confirm this item. Reserved with <b>free cancellation</b>. We'll verify on the shelf and message you before you travel.</div>
+
+    <!-- Post-pickup feedback (AI-AC5) -->
+    <div class="whybox" style="display:block;">
+      <b>After pickup:</b> Was it on the shelf? &nbsp;
+      <button style="width:auto;display:inline-block;padding:4px 10px;" onclick="alert('Logged: YES (feeds accuracy-by-band, AI-AC5)')">Yes</button>
+      <button style="width:auto;display:inline-block;padding:4px 10px;" onclick="alert('Logged: NO (feeds accuracy-by-band, AI-AC5)')">No</button>
+    </div>
+
+    <button onclick="go(1)" style="background:#eee">↺ Start over</button>
+  </div>
+
+</div>
+
+<script>
+  let current = 'green';
+
+  function setState(s){
+    current = s;
+    // Screen 1 band
+    document.getElementById('band-green').classList.toggle('hidden', s!=='green');
+    document.getElementById('band-amber').classList.toggle('hidden', s!=='amber');
+    document.getElementById('band-grey').classList.toggle('hidden', s!=='grey');
+    // Screen 1 timestamp (grey = stale)
+    document.getElementById('ts-fresh').classList.toggle('hidden', s==='grey');
+    document.getElementById('ts-stale').classList.toggle('hidden', s!=='grey');
+    // Screen 1 fallback (grey only)
+    document.getElementById('fallback1').classList.toggle('hidden', s!=='grey');
+    // Screen 2 bands
+    document.getElementById('conf-green').classList.toggle('hidden', s!=='green');
+    document.getElementById('conf-amber').classList.toggle('hidden', s!=='amber');
+    document.getElementById('conf-grey').classList.toggle('hidden', s!=='grey');
+    // Screen 2 free-cancel note (amber + grey)
+    document.getElementById('cancelNote').classList.toggle('hidden', s==='green');
+    document.getElementById('fallback2').classList.toggle('hidden', s==='green');
+    // Screen 3 honest copy
+    document.getElementById('honest-green').classList.toggle('hidden', s!=='green');
+    document.getElementById('honest-amber').classList.toggle('hidden', s!=='amber');
+    document.getElementById('honest-grey').classList.toggle('hidden', s!=='grey');
+  }
+
+  function go(n){
+    document.querySelectorAll('.screen').forEach(el=>el.classList.add('hidden'));
+    if(n===1){ document.querySelectorAll('.screen')[0].classList.remove('hidden'); }
+    if(n===2){ document.getElementById('screen2').classList.remove('hidden'); }
+    if(n===3){ document.getElementById('screen3').classList.remove('hidden'); }
+    window.scrollTo(0,0);
+  }
+
+  function toggleWhy(){
+    const w=document.getElementById('whybox');
+    w.style.display = (w.style.display==='block')?'none':'block';
+  }
+
+  setState('green'); // default happy path
+</script>
+</body>
+</html>

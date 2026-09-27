@@ -1,0 +1,24 @@
+graph TD
+    classDef syncStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef asyncStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef extStyle fill:#e1f5fe,stroke:#0277bd,stroke-width:2px;
+
+    POS["POS Client (React Native)"] -->|Synchronous API call| GW["Apollo GraphQL Gateway"]
+    
+    GW -->|gRPC / Internal| ID["Identity Service"]
+    GW -->|gRPC / Internal| Cart["Cart Service"]
+    GW -->|gRPC / Internal| Checkout["Checkout Service"]
+    
+    ID -->|OIDC / HTTPS| Auth0["Auth0 IDAM"]:::extStyle
+    
+    Cart -->|Redis Protocol| Redis["Inventory Read Cache (Redis)"]
+    Cart -->|SQL / TCP| DB["Platform Database (PostgreSQL)"]
+    
+    Checkout -->|REST / HTTPS| Stripe["Stripe Payment Gateway"]:::extStyle
+    Checkout -.->|Async Events / AMQP| Kafka["Order Event Bus (Kafka)"]:::asyncStyle
+    
+    Kafka -.->|Batch / OData sync| SAP["SAP ECC (Ground Truth)"]:::extStyle
+
+    class POS,GW,ID,Cart,Checkout,Redis,DB syncStyle;
+    class Kafka asyncStyle;
+    class Auth0,Stripe,SAP extStyle;

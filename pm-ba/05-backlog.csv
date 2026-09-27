@@ -1,0 +1,20 @@
+Rank,Story,Reach,Impact,Confidence,Effort,RICE Score,Rationale
+"1,Story 11 - Clear ""unknown"" vs false ""in stock"",40000,3,0.8,1,96000,""Trust-repair for Persona A at near-zero incremental effort once Story 2's threshold exists; directly prevents the fail-open that causes phantom-stock cancellations."""
+"2,Story 10 - No personal data in prediction (EU/JP consent),60000,2,1.0,2,60000,""Compliance gate across all 22 countries at 100% confidence Ñ a legal must-have that also unblocks EU/JP rollout entirely; not optional regardless of score."""
+"3,Story 2 - Told when system is unsure (the refusal contract),40000,3,1.0,3,40000,""The explicit 'unknown' state is the core differentiator and fail-safe; highest confidence because AC-2's >=95% gate and fail-safe default are already fully specified."""
+"4,Story 1 - Show collectability verdict,50000,3,0.8,4,30000,""Core capability reaching every click-&-collect shopper and directly targeting the 7%->2% metric; 80% confidence reflects unproven per-region verdict accuracy until the golden set runs."""
+"5,Story 3 - Store-specific verdict (no regional average),45000,2,0.8,3,24000,""Prevents the documented 'regional-average leak' adversary finding; per-store granularity is what makes the verdict actionable rather than a blurred market average."""
+6,Story 8 - Multilingual verdict (EU/JP),35000,1,0.8,2,14000,
+7,Story 9 - Refresh verdict on return (stale data),25000,1,0.8,2,10000,
+8,Story 4 - Verdict survives to pickup,30000,3,0.5,5,9000,
+9,Story 5 - Fast check on slow connection (latency),30000,1,0.8,3,8000,
+10,Story 12 - Flag reserved-but-uncertain for associates,8000,2,0.5,3,2667,
+11,Story 6 - Log verdicts + confidence for audit,5000,1,1.0,2,2500,
+12,Story 7 - Suggest alternative nearby store,20000,1,0.5,4,2500,
+
+
+
+--- AI CRITIQUE (Step 4) ---
+Row critiqued,Prompt asked,AI finding,My decision
+"Highest-score (Story 11),""Effort=1 gives it #1 Ñ what dependency am I ignoring?"",""Story 11 can't be 1 p-mo alone; it depends on Story 2's confidence threshold + Story 1's verdict rendering. Its low effort is only true AFTER the AI capability ships."",""Kept the score but documented that Story 11 sequences AFTER Stories 1+2. Framework flagged value, not build order."""
+"Lowest-confidence (Story 4),""Story 4 is 50% confidence but IS the success metric (<=2% cancellations) Ñ should low rank override its importance?"",""No Ñ Story 4 measures the outcome the whole feature exists for. Low RICE reflects dependence on stock-drift outside the assistant's control, not low value."",""Override noted: monitored as the outcome commitment despite rank #8."""

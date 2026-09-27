@@ -1,0 +1,43 @@
+sequenceDiagram
+    autonumber
+    actor Associate as Store Associate
+    participant POS as POS Client (React Native)
+    participant GW as Apollo Gateway (GraphQL)
+    participant ID as Identity Service
+    participant Cart as Cart Service
+    participant Cache as Inventory Cache (Redis)
+    participant SAP as SAP ECC (Source of Truth)
+
+    Note over Associate, SAP: Meridian Phase 1 In-Store Online-Cart Lookup Flow
+
+    Associate->>POS: Scans customer loyalty QR code (~50ms)
+    POS->>GW: POST /graphql (query: getCustomerCartByQR) (~15ms)
+    
+    rect rgb(240, 248, 260)
+        note right of GW: Step 1: Resolve Identity & Token
+        GW->>ID: Validate loyalty token & resolve customerId (~20ms, p95)
+        ID-->>GW: Customer Profile & ID
+    end
+
+    rect rgb(245, 245, 220)
+        note right of GW: Step 2: Retrieve Active Online Cart
+        GW->>Cart: Fetch active cart & line items by customerId (~30ms, p95)
+        Cart-->>GW: Cart items [SKU-A, SKU-B, SKU-C]
+    end
+
+    rect rgb(230, 245, 230)
+        note right of GW: Step 3: Check Stock Availability (Cache-First)
+        GW->>Cache: MGET stock[SKU-A, SKU-B, SKU-C] (~5ms, p95)
+        Cache-->>GW: Stock Status: [SKU-A: Available, SKU-B: Available, SKU-C: MISS]
+    end
+
+    alt Cache Miss Detected for SKU-C
+        note over GW, SAP: Fallback Path for Cache Miss
+        GW->>SAP: Synchronous OData Read stock for SKU-C (~400ms, p95)
+        SAP-->>GW: Stock Status: SKU-C Available (Slow Path)
+    end
+
+    GW-->>POS: Render online cart with live stock status (~15ms)
+    POS-->>Associate: Display cart items & fulfillment options on screen (~50ms)
+
+    Note over Associate, POS: Total Happy Path p95 ~135ms | With SAP Fallback p95 ~535ms (Well within 1500ms SLA)

@@ -1,0 +1,72 @@
+flowchart LR
+    subgraph PUBLIC["External / Untrusted User Zone"]
+        USER["Customer"]
+        CLIENT["Web Storefront or Mobile App"]
+    end
+
+    subgraph EDGE["TB1 — MRG Application Perimeter"]
+        LB["Load Balancer / API Gateway"]
+    end
+
+    subgraph APP["TB2 — Application Services Boundary"]
+        CART["cart-api<br/>3 Kubernetes replicas"]
+        INVENTORY["Inventory Service"]
+    end
+
+    subgraph DATA["TB3 — Protected Data Boundary"]
+        POSTGRES[("Postgres<br/>Carts and Orders")]
+        REDIS[("Redis<br/>Sessions and Cart Cache")]
+    end
+
+    subgraph AI["TB4 — Governed AI Boundary"]
+        DIAL["EPAM DIAL Gateway"]
+    end
+
+    subgraph THIRD["External Provider Boundary"]
+        IDP["Identity Provider"]
+        PAYMENT["Payment Provider"]
+        LLM["Language Model Provider"]
+    end
+
+    subgraph OPS["Operations and Audit Boundary"]
+        OBS[("Observability Stack<br/>Metrics, Logs, Traces, Cost")]
+    end
+
+    USER -->|"cart actions and credentials — untrusted"| CLIENT
+    CLIENT -->|"HTTPS API request — untrusted"| LB
+
+    LB -->|"token validation request"| IDP
+    IDP -->|"identity claims and validation result"| LB
+
+    LB -->|"authenticated cart or checkout request"| CART
+    CART -->|"read and write cart and order records"| POSTGRES
+    CART -->|"read and write session and cart cache"| REDIS
+
+    CART -->|"inventory reservation request"| INVENTORY
+    INVENTORY -->|"availability and reservation result"| CART
+
+    CART -->|"payment authorization using payment token"| PAYMENT
+    PAYMENT -->|"authorization result and transaction reference"| CART
+
+    CART -->|"cart-summary prompt through approved gateway"| DIAL
+    DIAL -->|"governed model request"| LLM
+    LLM -->|"generated cart summary"| DIAL
+    DIAL -->|"filtered summary and usage metadata"| CART
+
+    CART -->|"HTTP response, order status, and optional summary"| LB
+    LB -->|"HTTPS response"| CLIENT
+    CLIENT -->|"rendered cart and checkout result"| USER
+
+    LB -->|"access logs, latency, and error metrics"| OBS
+    CART -->|"application logs, metrics, and traces"| OBS
+    POSTGRES -->|"database health and audit events"| OBS
+    REDIS -->|"cache health and capacity metrics"| OBS
+    DIAL -->|"AI calls, tokens, responses, denials, and cost"| OBS
+
+    style PUBLIC fill:#fff4e5,stroke:#d97706,stroke-width:2px,stroke-dasharray:6 4
+    style EDGE fill:#e8f1ff,stroke:#2563eb,stroke-width:2px,stroke-dasharray:6 4
+    style APP fill:#ecfdf5,stroke:#059669,stroke-width:2px,stroke-dasharray:6 4
+    style DATA fill:#fef2f2,stroke:#dc2626,stroke-width:2px,stroke-dasharray:6 4
+    style AI fill:#f5f3ff,stroke:#7c3aed,stroke-width:2px,stroke-dasharray:6 4
+    style THIRD fill:#fff7ed,stroke:#ea580c,stroke-width:2px,stroke-dasharray:6 4
+    style OPS fill:#f8fafc,stroke:#475569,stroke-width:2px,stroke-dasharray:6 4

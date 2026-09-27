@@ -1,0 +1,28 @@
+C4Context
+title System Context Diagram (L1) — Meridian Omnichannel Platform (Phase 1)
+
+Person(customer, "Customer", "Retail shopper accessing web and mobile storefronts across 22 countries.")
+Person(associate, "Store Associate", "In-store staff performing inventory lookup and click-&-collect fulfilment.")
+Person(marketing, "Marketing & Ops", "Staff managing multi-region campaigns and customer segmentation.")
+
+System(meridian, "Meridian Platform", "Unified omnichannel commerce platform (commercetools headless backbone, identity, cart, and checkout).")
+
+System_Ext(sap, "SAP ECC", "Enterprise ERP acting as inventory ground truth and finance system of record.")
+System_Ext(auth0, "Auth0 IDAM", "Cloud Identity and Access Management for customer federation and single sign-on.")
+System_Ext(stripe, "Stripe", "External payment gateway handling secure PCI-DSS Level 1 payment processing and SCA.")
+System_Ext(sendgrid, "SendGrid", "Transactional email and notification delivery service.")
+System_Ext(crm, "Regional CRMs", "6 legacy CRM systems (Salesforce, Hubspot, Dynamics) holding historical customer data.")
+
+Rel(customer, meridian, "Browses catalog, places orders, and manages cart via", "HTTPS / JSON")
+Rel(associate, meridian, "Verifies stock and processes click-&-collect via", "HTTPS / JSON")
+Rel(marketing, meridian, "Manages campaigns and views unified customer data via", "HTTPS / JSON")
+
+Rel(meridian, auth0, "Authenticates users and verifies tokens via", "OIDC / HTTPS")
+Rel(meridian, stripe, "Authorises payments and processes SCA checkouts via", "REST / HTTPS")
+Rel(stripe, meridian, "Sends asynchronous payment confirmation webhooks to", "Webhook / HTTPS")
+Rel(meridian, sap, "Synchronizes inventory deltas and financial records with", "Batch / OData")
+Rel(sap, meridian, "Provides inventory batch sync feeds to", "Batch / OData")
+Rel(meridian, sendgrid, "Dispatches transactional emails via", "API / HTTPS")
+Rel(crm, meridian, "Syncs customer profile and loyalty history into", "Batch / API")
+
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

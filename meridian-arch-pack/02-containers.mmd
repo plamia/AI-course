@@ -1,0 +1,46 @@
+C4Container
+title Container Diagram (L2) — Meridian Omnichannel Platform (Phase 1)
+
+Person(customer, "Customer", "Shopper using web or mobile storefront.")
+Person(associate, "Store Associate", "In-store staff checking inventory.")
+
+Boundary(meridian_boundary, "Meridian Platform (Phase 1)") {
+    Container(web, "Web Storefront", "Next.js / React", "Customer-facing web shopping experience across 22 regional domains.")
+    Container(mobile, "Mobile App", "React Native", "Cross-platform mobile app for shoppers and store associates.")
+    Container(gateway, "API Gateway", "Apollo GraphQL / Node.js", "Unified API gateway routing client requests to backend containers.")
+    Container(identity_svc, "Identity Service", "Node.js / Express", "Manages user federation, sessions, and role mapping backed by Auth0.")
+    Container(cart_svc, "Cart Service", "Node.js / commercetools SDK", "Manages regional and cross-channel shopping carts and item reservations.")
+    Container(checkout_svc, "Checkout Service", "Node.js / commercetools SDK", "Coordinates checkout flow, tax calculation, and payment execution.")
+    
+    ContainerQueue(kafka, "Order Event Bus", "Apache Kafka", "Reliable asynchronous event stream for order state changes and inventory outbox publishing.")
+    
+    ContainerDb(redis_cache, "Inventory Read Cache", "Redis", "Low-latency read-optimized cache for real-time stock availability queries.")
+    ContainerDb(db_rds, "Platform Database", "PostgreSQL (Amazon RDS)", "Core transactional database for Phase 1 microservices state.")
+}
+
+System_Ext(sap, "SAP ECC", "Enterprise ERP (Inventory & Finance ground truth).")
+System_Ext(auth0, "Auth0 IDAM", "Cloud Identity Provider.")
+System_Ext(stripe, "Stripe", "Payment Gateway (PCI-DSS L1).")
+
+Rel(customer, web, "Browses and checks out using", "HTTPS")
+Rel(customer, mobile, "Browses and manages cart using", "HTTPS")
+Rel(associate, mobile, "Verifies stock and items using", "HTTPS")
+
+Rel(web, gateway, "Sends GraphQL queries and mutations to", "GraphQL / HTTPS")
+Rel(mobile, gateway, "Sends GraphQL queries and mutations to", "GraphQL / HTTPS")
+
+Rel(gateway, identity_svc, "Validates tokens and authenticates via", "gRPC / Internal")
+Rel(gateway, cart_svc, "Manages shopping carts via", "gRPC / Internal")
+Rel(gateway, checkout_svc, "Processes orders and payments via", "gRPC / Internal")
+
+Rel(identity_svc, auth0, "Federates identity and verifies tokens via", "OIDC / HTTPS")
+Rel(cart_svc, redis_cache, "Queries and updates stock availability in", "Redis Protocol / TCP")
+Rel(checkout_svc, stripe, "Authorises payments and SCA via", "REST / HTTPS")
+Rel(stripe, checkout_svc, "Sends webhook payment confirmations to", "Webhook / HTTPS")
+
+Rel(checkout_svc, kafka, "Publishes order and inventory events to", "AMQP / Kafka Protocol")
+Rel(kafka, sap, "Reconciles inventory and financial deltas with", "Batch / OData")
+Rel(cart_svc, db_rds, "Persists service state in", "SQL / TCP")
+Rel(checkout_svc, db_rds, "Persists service state in", "SQL / TCP")
+
+UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

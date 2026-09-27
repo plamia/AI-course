@@ -6,7 +6,10 @@ export interface PaginationQuery {
   
   export function parsePaginationQuery(query: Record<string, unknown>): PaginationQuery {
     const parseVal = (val: unknown): string | undefined => {
-      if (Array.isArray(val)) return String(val[0]);
+      if (Array.isArray(val)) {
+        if (val.length === 0) return undefined;
+        return typeof val[0] === 'string' ? val[0] : String(val[0]);
+      }
       if (typeof val === 'string') return val;
       return undefined;
     };

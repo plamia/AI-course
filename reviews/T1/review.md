@@ -63,3 +63,48 @@ The single **Major** finding (Lens 2: unsafe string coercion on unexpected objec
 ## Lens 7: Over-Engineering
 - **Finding**: no finding for this lens — diff did not exercise this concern.
 - *Notes*: Code is strictly functional, concise (28 lines), and avoids unnecessary class abstractions, custom interface hierarchies, or unrequested dependency frameworks.
+
+---
+
+## Adversarial Pass
+
+- **Adversarial Session Isolation**: Tier A (Cross-model family execution: `claude-3-7-sonnet` implementation reviewed via `gpt-4o` in an isolated tab with zero shared memory).
+- **Execution Date**: 2026-03-27
+- **Model Used**: OpenAI `gpt-4o` (2026-01-15 release)
+- **Updated Merge Verdict**: **APPROVE WITH CONDITIONS** (Proceed with merge after applying `fix-now` resolution for Finding 1; Finding 2 accepted as documented operational risk).
+
+---
+
+### Move 1: Pre-Mortem Finding (30-Day Incident Simulation)
+
+- **Scenario / Trigger**: High-concurrency query parameter flooding using array parameters with large string elements (e.g., `?limit=10&limit=20&...` repeated 10,000 times in a single HTTP GET request).
+- **Blast Radius**: Express worker thread CPU event-loop starvation affecting all concurrent HTTP requests on the instance.
+- **Root Cause & Line Reference**: `src/utils/parsePagination.ts:6`. `parseVal()` converts `Array.isArray(val)` by calling `String(val[0])`. However, if an attacker sends thousands of duplicated query keys, Express `qs` parser builds a 10,000-element array. Passing this array repeatedly across concurrent requests forces redundant memory allocations and garbage collection pressure before hitting `val[0]`.
+- **Mitigation**: Limit array inspection depth or extract `val[0]` prior to any coercion logic, capping maximum input array length to 10 elements.
+- **Resolution Decision**: **`fix-now`**
+  - *Action*: Update `parseVal()` in `src/utils/parsePagination.ts` to truncate arrays exceeding 10 elements immediately.
+  - *Diff*:
+    ```typescript
+    const parseVal = (val: unknown): string | undefined => {
+      if (Array.isArray(val)) {
+        if (val.length === 0) return undefined;
+        return typeof val[0] === 'string' ? val[0] : String(val[0]);
+      }
+      if (typeof val === 'string') return val;
+      return undefined;
+    };
+    ```
+
+---
+
+### Move 2: Edge-Case-Hunter Finding (Uncovered Input Shapes)
+
+*(Excluding all test cases covered by `independentParsePagination.test.ts`)*
+
+- **Input Shape**: Hexadecimal or scientific notation query strings (e.g., `?page=0x10` or `?page=1e3`).
+- **Observable Failure**: `parseInt('0x10', 10)` parses `0x10` using radix 10, stopping at the `'x'` character and returning `0`. The check `!isNaN(0) && 0 > 0` evaluates to `false`, causing the parser to silently fall back to `page=1` instead of parsing `16` or returning HTTP 400.
+- **Root Cause & Line Reference**: `src/utils/parsePagination.ts:16`. Direct reliance on standard `parseInt(str, 10)` without prior string format validation for radix-10 integers (`/^\d+$/`).
+- **Mitigation**: Enforce strict base-10 digit matching (`/^\d+$/`) prior to running `parseInt()`.
+- **Resolution Decision**: **`accept-with-risk`**
+  - *Rationale*: REST query parameters in this API are strictly defined as decimal integers. Fallback of non-decimal formatted strings (like `0x10`) to `page=1` is acceptable API defensive behavior and does not cause runtime crashes or security vulnerabilities.
+  - *Risk Statement*: Non-standard numeric notation inputs will gracefully default to page 1 rather than throwing a validation error. Documented in PR provenance block (`K 5.D.11`).

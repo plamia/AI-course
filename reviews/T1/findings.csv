@@ -1,0 +1,8 @@
+lens,severity,file,line,description,suggested_fix
+"Hidden Assumptions",MAJOR,"src/utils/parsePagination.ts",6,"Unsafe string coercion on nested object params","Add explicit typeof string check before processing array elements"
+"Spec/ADR Drift",MINOR,"src/utils/parsePagination.ts",22,"Raw error throw risks Express 500 status instead of 400","Export custom error or catch in controller for 400 response mapping"
+"Edge Cases",MINOR,"src/utils/parsePagination.ts",16,"Unbounded page parameter value parsing","Cap max page value to 1,000,000"
+"Independent Tests Check",NIT,"tests/unit/independentParsePagination.test.ts",55,"Float truncation behavior not explicitly noted in spec","Add 1-line clarification in spec.md"
+"Security / Tool Surface",NIT,"src/utils/parsePagination.ts",18,"Unbounded string length passed to toUpperCase()","Slice string input to max 20 chars prior to uppercase normalization"
+"Behaviour Preservation",NONE,"N/A",N/A,"no finding for this lens — diff did not exercise this concern",N/A
+"Over-Engineering",NONE,"N/A",N/A,"no finding for this lens — diff did not exercise this concern",N/A

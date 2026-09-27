@@ -56,3 +56,14 @@
 ## Outcome
 - **Status**: **COMPLETE**
 - **Next Step**: Proceed to Task `T2` (Wiring repository layer & mock data fixtures for log summaries).
+
+---
+
+## Independent Test Generation Verification (Kata 5.8)
+- **Isolation Tier**: Tier A (Different client/model instance — separate window, zero memory/history retention).
+- **Isolation Confirmation**: The test generation session had access **ONLY** to `specs/log-summariser/spec.md` and TypeScript public interface signatures (`parsePaginationQuery(query: Record<string, unknown>): PaginationQuery`). **No implementation code or previous implementation transcripts were exposed.**
+- **Test File Path**: `tests/unit/independentParsePagination.test.ts`
+- **Execution Summary**: 11 total tests executed. 11 Passed, 0 Failed.
+- **Spec Ambiguity Flags Identified**:
+  - `page=2.8` (float inputs): Handled via `parseInt()` truncation (Evaluated as `verified_pass`).
+  - `limit=['15', '30']` (duplicate array params): Evaluated as `verified_pass` via first-element extraction guard.

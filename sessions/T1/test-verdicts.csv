@@ -1,0 +1,12 @@
+test_name,status,verdict,next_action,ticket_ref
+"should return page=1 and limit=20 when query is empty",PASS,verified_pass,none,N/A
+"should return page=1 and limit=20 when query parameters are undefined",PASS,verified_pass,none,N/A
+"should correctly parse valid page and limit numbers passed as strings",PASS,verified_pass,none,N/A
+"should clamp limit to maximum 100 when requested limit exceeds 100",PASS,verified_pass,none,N/A
+"should fallback page to 1 when page is zero or negative",PASS,verified_pass,none,N/A
+"should fallback to defaults when page/limit are non-numeric strings",PASS,verified_pass,none,N/A
+"should parse valid uppercase severity parameter",PASS,verified_pass,none,N/A
+"should normalize lowercase severity string to uppercase",PASS,verified_pass,none,N/A
+"should throw INVALID_SEVERITY error on unsupported severity string",PASS,verified_pass,none,N/A
+"should truncate floating point page string to integer",PASS,verified_pass,none,N/A
+"should extract first element if query param arrives as array",PASS,verified_pass,none,N/A

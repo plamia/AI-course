@@ -1,0 +1,10 @@
+# Cold Context Archive Index
+
+This directory holds historical records, closed Architecture Decision Records (ADRs), past incident reports, and legacy gap logs. 
+
+**Usage Rule:** Do NOT load files in this directory automatically during routine coding tasks. Load specific files manually only when investigating historical decisions or refactoring legacy boundaries.
+
+## Directory Contents
+- `gap-log.md` — Machine-greppable tracking of undocumented codebase gaps and tribal knowledge.
+- `adr-archive/` — Historical ADRs from Module 400 (ADR-001 through ADR-012).
+- `incidents/` — Post-mortem notes from prior production cutovers and legacy ERP downtime.

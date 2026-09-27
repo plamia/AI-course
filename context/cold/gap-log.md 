@@ -1,0 +1,19 @@
+# Cold Context Gap Log (YAML Format)
+gaps:
+  - id: GAP-001
+    description: "Undocumented custom SOAP protocol converter for legacy ERP 2012 middleware."
+    discovery_event: "Refactoring Phase 1 discovery pass by agent"
+    impact: "Uncertain schema mapping when processing non-standard EU VAT characters."
+    refresh_trigger: "Phase 1 Exit Gate or legacy schema discovery sign-off"
+
+  - id: GAP-002
+    description: "Verbal agreement during Q3 steering call on custom 5-second timeout override for Site 4."
+    discovery_event: "Reviewing fastify connection pool settings"
+    impact: "Site 4 experiences intermittent HTTP 504 errors if timeout is reduced to 2s standard."
+    refresh_trigger: "ADR update on site-specific timeout policies"
+
+  - id: GAP-003
+    description: "Legacy price-book CSV importer silently drops rows with missing discount codes."
+    discovery_event: "Data team audit during Module 700 Data Product build"
+    impact: "AI RAG price indexing receives incomplete pricing matrices."
+    refresh_trigger: "Completion of Phase 1 price-book data cleansing pass"
